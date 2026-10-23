@@ -1,6 +1,9 @@
-CSCI 6201 Lab 2 submission information
+﻿CSCI 6201 Lab 2 submission
+
 Project member: Shamir Tyner
-Dataset: County Presidential Election Returns, 2000–2024, MIT Election Data + Science Lab
-Repository: https://github.com/shamirtyner96/6201-final-project
-Research question: Are swing states really swinging, or are they shifting? Do competitive presidential states show repeated election-to-election swings or longer-term shifts in two-party margins from 2000–2024?
+Dataset: County Presidential Election Returns, 2000–2024
+GitHub repository: https://github.com/shamirtyner96/6201-final-project
+
+Research question: Are swing states really swinging, or are they shifting? Do competitive states show repeated election-to-election swings or longer-term shifts in their two-party presidential vote margins?
+
 Instructor feedback requested: None.
