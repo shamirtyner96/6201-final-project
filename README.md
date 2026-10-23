@@ -18,7 +18,7 @@ The five numbered files preserve the original exploratory script in consecutive 
 
 ## Next Steps for Final Project
 
-- **Working:** Data loading, filtering, locality grouping, two-party calculations, and validation.
+- **Working:** Data loading, filtering, locality grouping, and two-party calculations.
 - **Needs work:** Assess which state-year results have sufficient TOTAL-record coverage.
 - **Plan:** Compare more competitive states and refine the interpretation of movement over time.
 - **Instructor feedback:** None requested at this time.
