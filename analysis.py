@@ -5,13 +5,17 @@ import pandas as pd
 # Load the original county returns.
 raw_data = pd.read_csv('Lab2/countypres_2000-2024.csv')
 
-# dataset preview
-# print(raw_data.shape, raw_data.columns.tolist())
-
 # Use only Democratic and Republican TOTAL records. Other modes are ignored.
 filter_rows = raw_data['party'].isin(['REPUBLICAN', 'DEMOCRAT']) & (raw_data['mode'] == 'TOTAL')
 voter_data = raw_data[filter_rows]
-# print(voter_data['candidatevotes'].describe())
+
+# Uncomment these lines to explore the data.
+# print('Dataset rows and columns:', raw_data.shape)
+# print('Column names:', raw_data.columns.tolist())
+# print('Vote statistics (including minimum, maximum, and average):', voter_data['candidatevotes'].describe())
+# print('Records by party:', voter_data['party'].value_counts())
+# print('Missing values:', voter_data[['year', 'state', 'county_name', 'party', 'candidatevotes']].isna().sum())
+# print('Election years:', sorted(voter_data['year'].unique()))
 
 # Add the county records to state-level party totals for each election year.
 groupedData = {}
