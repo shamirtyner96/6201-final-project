@@ -1,5 +1,7 @@
 # Swing or Shift? Shamir Tyner, CSCI 6201 Lab 2
 # Run from the repository root: python analysis.py
+import csv
+from pathlib import Path
 import pandas as pd
 
 # Load the original county returns.
@@ -20,68 +22,57 @@ print('Democratic/Republican TOTAL records:', len(voter_data))
 print('Candidate votes per TOTAL record:')
 print(voter_data['candidatevotes'].describe().to_string())
 
-# Group county records using the original nested dictionary.
+# Add the county records to state-level party totals for each election year.
 groupedData = {}
 for index, row in voter_data.iterrows():
     year = row['year']
     state = row['state']
     party = row['party']
-    county = row['county_name']
     votes = row['candidatevotes']
+
     if year not in groupedData:
         groupedData[year] = {}
     if state not in groupedData[year]:
         groupedData[year][state] = {}
     if party not in groupedData[year][state]:
-        groupedData[year][state][party] = {'total': 0, 'counties': {}}
-    if county not in groupedData[year][state][party]['counties']:
-        groupedData[year][state][party]['counties'][county] = 0
-    groupedData[year][state][party]['counties'][county] += votes
-    groupedData[year][state][party]['total'] += votes
+        groupedData[year][state][party] = 0
+    groupedData[year][state][party] += votes
 
-# Calculate shares and signed margins for each available state and election year.
-def calculate_shares(democratic, republican):
-    total = democratic + republican
-    if total == 0:
-        return None
-    dem_share = democratic / total * 100
-    rep_share = republican / total * 100
-    return {'democratic_votes': democratic, 'republican_votes': republican,
-            'two_party_total': total, 'democratic_share': dem_share,
-            'republican_share': rep_share, 'margin': dem_share - rep_share}
+# Store one margin per state and year. None means there is no usable TOTAL data.
+state_margins = {}
+years = sorted(raw_data['year'].unique())
+states = sorted(raw_data['state'].unique())
+for year in years:
+    state_margins[year] = {}
+    for state in states:
+        state_margins[year][state] = None
+        if year not in groupedData or state not in groupedData[year]:
+            continue
+        votes = groupedData[year][state]
+        if 'DEMOCRAT' not in votes or 'REPUBLICAN' not in votes:
+            continue
+        dem_votes = votes['DEMOCRAT']
+        rep_votes = votes['REPUBLICAN']
+        total = dem_votes + rep_votes
+        if total == 0:
+            continue
+        dem_share = dem_votes / total * 100
+        rep_share = rep_votes / total * 100
+        state_margins[year][state] = dem_share - rep_share
 
-# Compare only localities where TOTAL records exist for both parties.
-state_results = {}
-for year in sorted(groupedData):
-    state_results[year] = {}
-    for state in sorted(groupedData[year]):
-        parties = groupedData[year][state]
-        if 'DEMOCRAT' not in parties or 'REPUBLICAN' not in parties:
-            continue
-        democrats = parties['DEMOCRAT']['counties']
-        republicans = parties['REPUBLICAN']['counties']
-        common_counties = set(democrats) & set(republicans)
-        if not common_counties:
-            continue
-        dem_total = 0
-        rep_total = 0
-        for county in common_counties:
-            dem_total += democrats[county]
-            rep_total += republicans[county]
-        result = calculate_shares(dem_total, rep_total)
-        if result is None:
-            continue
-        result['county_count'] = len(common_counties)
-        state_results[year][state] = result
+# Save the results so they remain available after the program finishes.
+Path('results').mkdir(exist_ok=True)
+with open('results/state_margins.csv', 'w', newline='', encoding='utf-8') as output:
+    writer = csv.writer(output)
+    writer.writerow(['year', 'state', 'margin_percentage_points'])
+    for year in years:
+        for state in states:
+            margin = state_margins[year][state]
+            if margin is None:
+                writer.writerow([year, state, ''])
+            else:
+                writer.writerow([year, state, round(margin, 2)])
 
-print('State/DC counts with paired TOTAL records by year (not a completeness guarantee):')
-for year in sorted(state_results):
-    print(year, len(state_results[year]))
-print('Selected examples (D votes, R votes, margin):')
-for year, state in [(2020, 'VIRGINIA'), (2020, 'PENNSYLVANIA'), (2024, 'WISCONSIN')]:
-    result = state_results.get(year, {}).get(state)
-    if result is None:
-        print(year, state, 'unavailable under TOTAL-only filter')
-    else:
-        print(year, state, int(result['democratic_votes']), int(result['republican_votes']),
-              round(result['margin'], 2), 'percentage points,', result['county_count'], 'localities')
+print('\nSaved state margins to results/state_margins.csv')
+print('Positive margins favor Democrats; negative margins favor Republicans.')
+print('A blank margin means no usable TOTAL records were available.')
