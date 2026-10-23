@@ -1,13 +1,11 @@
 # Swing or Shift? Shamir Tyner, CSCI 6201 Lab 2
 # Run from the repository root: python analysis.py
-import csv
-from pathlib import Path
 import pandas as pd
 
 # Load the original county returns.
 raw_data = pd.read_csv('Lab2/countypres_2000-2024.csv')
 
-# Uncomment these to explore the dataset.
+# dataset preview
 # print(raw_data.shape, raw_data.columns.tolist())
 
 # Use only Democratic and Republican TOTAL records. Other modes are ignored.
@@ -53,19 +51,5 @@ for year in years:
         rep_share = rep_votes / total * 100
         state_margins[year][state] = dem_share - rep_share
 
-# Save the results so they remain available after the program finishes.
-Path('results').mkdir(exist_ok=True)
-with open('results/state_margins.csv', 'w', newline='', encoding='utf-8') as output:
-    writer = csv.writer(output)
-    writer.writerow(['year', 'state', 'margin_percentage_points'])
-    for year in years:
-        for state in states:
-            margin = state_margins[year][state]
-            if margin is None:
-                writer.writerow([year, state, ''])
-            else:
-                writer.writerow([year, state, round(margin, 2)])
-
-print('\nSaved state margins to results/state_margins.csv')
-print('Positive margins favor Democrats; negative margins favor Republicans.')
-print('A blank margin means no usable TOTAL records were available.')
+# Uncomment to see a margin for a particular year and state.
+# print(state_margins[2020]['PENNSYLVANIA'])

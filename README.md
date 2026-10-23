@@ -10,7 +10,7 @@
 
 ## Run
 
-From the repository root, run `python -m pip install -r requirements.txt`, then `python analysis.py`. The program stores margins by year and state in `state_margins` and saves them in `results/state_margins.csv`. A blank margin means no usable TOTAL records were available. Other voting modes and parties are excluded.
+From the repository root, run `python -m pip install -r requirements.txt`, then `python analysis.py`. The program stores margins by year and state in the `state_margins` dictionary while it runs. A value of `None` means no usable TOTAL records were available. Uncomment the final print statement in `analysis.py` to see an example. Other voting modes and parties are excluded.
 
 The TOTAL-only filter leaves some states unavailable in certain years, including Virginia in 2020 and Wisconsin in 2024. Some other state-year results may contain only a subset of localities. The presence of a state in the output does not establish complete coverage.
 
