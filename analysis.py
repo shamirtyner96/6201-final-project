@@ -17,7 +17,6 @@ print('Number of samples (records):', len(raw_data))
 print('Number of columns:', len(raw_data.columns))
 print('Columns:', ', '.join(raw_data.columns))
 print('Analytical outcome: Democratic minus Republican two-party vote margin')
-print('Model type: regression')
 print('Election years:', sorted(raw_data['year'].unique()))
 print('States and DC:', raw_data['state'].nunique())
 
@@ -118,8 +117,6 @@ from pathlib import Path
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error
 
 years = sorted(state_results)
 selected_states = ['PENNSYLVANIA', 'MICHIGAN']
@@ -163,29 +160,4 @@ plt.tight_layout()
 plt.savefig(figures / '02_margin_changes.png', dpi=150)
 plt.close()
 
-# Basic regression: learn Pennsylvania's earlier trend and check later elections.
-# X is election year; y is the Democratic-minus-Republican two-party margin.
-X = []
-y = []
-for index in range(len(years)):
-    X.append([years[index]])
-    y.append(state_margins['PENNSYLVANIA'][index])
-X_train, X_test = X[:5], X[5:]
-y_train, y_test = y[:5], y[5:]
-model = LinearRegression()
-model.fit(X_train, y_train)
-predictions = model.predict(X_test)
-error = mean_absolute_error(y_test, predictions)
-results = Path('results')
-results.mkdir(exist_ok=True)
-report = 'Pennsylvania linear regression demonstration\n'
-report += 'X: election year; y: Democratic-minus-Republican two-party margin (percentage points)\n'
-report += 'Training elections: 2000–2016; test elections: 2020 and 2024\n'
-for index in range(len(X_test)):
-    report += str(X_test[index][0]) + ': actual ' + format(y_test[index], '.2f')
-    report += ', predicted ' + format(predictions[index], '.2f') + ' percentage points\n'
-report += 'Test mean absolute error: ' + format(error, '.2f') + ' percentage points\n'
-report += 'Only two test elections: this is a preliminary exercise, not a forecast.\n'
-(results / 'preliminary_results.txt').write_text(report, encoding='utf-8')
-print('\n' + report)
 print('Saved two figures in figures/.')

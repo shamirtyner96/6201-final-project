@@ -6,9 +6,7 @@
 
 **Research question:** Are swing states really swinging, or are they shifting? More precisely, do competitive presidential states show repeated election-to-election partisan swings or longer-term directional shifts in their two-party margins from 2000–2024?
 
-**Model type:** Regression. A simple Pennsylvania linear regression uses election year as X and the Democratic-minus-Republican two-party margin as y. The model fits 2000–2016 and tests on 2020 and 2024. Its mean absolute error is 2.16 percentage points on those two elections; this is a small preliminary exercise, not an election forecast. See `results/preliminary_results.txt`.
-
-**Progress:** The program selects only Democratic and Republican records with `mode == TOTAL`, groups votes by state, year, and locality, calculates two-party shares and margins, creates two figures, and evaluates a basic model. A locality is included in a state's comparison only when both parties have a TOTAL record. Missing or unpaired records are omitted; results may therefore be partial and should not automatically be treated as complete statewide totals.
+**Progress:** The program selects only Democratic and Republican records with `mode == TOTAL`, groups votes by state, year, and locality, calculates two-party shares and margins, and creates two figures. A locality is included in a state's comparison only when both parties have a TOTAL record. Missing or unpaired records are omitted; results may therefore be partial and should not automatically be treated as complete statewide totals.
 
 ## Run
 
@@ -27,7 +25,7 @@ Positive margin or change means a Democratic advantage or movement toward Democr
 
 ## Next Steps for Final Project
 
-- **Working:** Data loading, filtering, locality grouping, two-party calculations, validation, two plots, and a preliminary regression.
-- **Needs work:** Assess which state-year results have sufficient TOTAL-record coverage and improve the small model evaluation.
+- **Working:** Data loading, filtering, locality grouping, two-party calculations, validation, and two plots.
+- **Needs work:** Assess which state-year results have sufficient TOTAL-record coverage.
 - **Plan:** Compare more competitive states and refine the interpretation of movement over time.
 - **Instructor feedback:** None requested at this time.
