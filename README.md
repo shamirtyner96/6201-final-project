@@ -6,6 +6,8 @@
 
 **Research question:** Are swing states really swinging, or are they shifting? More precisely, do competitive presidential states show repeated election-to-election partisan swings or longer-term directional shifts in their two-party margins from 2000–2024?
 
+**Planned problem type:** Regression. The two-party margin is a numerical value, so a simple regression could examine how a selected state?s margin changes over election years. The current analysis calculates margins; it does not yet train or evaluate a model.
+
 **Progress:** The program selects Democratic and Republican records with `mode == TOTAL`, adds the available county votes into state totals, and calculates a two-party margin for every available state and election year. Positive margins favor Democrats; negative margins favor Republicans. Missing or incomplete county records can make a state-year unavailable or partial.
 
 ## Run
