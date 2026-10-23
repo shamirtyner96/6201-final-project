@@ -8,13 +8,13 @@
 
 **Model type:** Regression. A simple Pennsylvania linear regression uses election year as X and the Democratic-minus-Republican two-party margin as y. The model fits 2000–2016 and tests on 2020 and 2024. Its mean absolute error is 2.16 percentage points on those two elections; this is a small preliminary exercise, not an election forecast. See `results/preliminary_results.txt`.
 
-**Progress:** The program explores and filters the data, groups votes by state, year, and locality, calculates two-party shares and margins, checks the results, creates two figures, and evaluates a basic model. For each locality and party, the program uses a TOTAL row when available; otherwise it sums the reported mode records. This restores records absent from a TOTAL-only filter. All 50 states and DC appear in each election year; selected totals have been checked against published state or FEC results. Coverage does not independently prove that every locality or mode is complete.
+**Progress:** The program selects only Democratic and Republican records with `mode == TOTAL`, groups votes by state, year, and locality, calculates two-party shares and margins, creates two figures, and evaluates a basic model. A locality is included in a state's comparison only when both parties have a TOTAL record. Missing or unpaired records are omitted; results may therefore be partial and should not automatically be treated as complete statewide totals.
 
 ## Run
 
-From the repository root, run `python -m pip install -r requirements.txt`, then `python analysis.py`. The script uses the repository-relative CSV path and saves figures and results. It stores results in `state_results` and locality records in `groupedData` during the run. A locality is identified by its FIPS code and name where available; records without FIPS use their locality name. The program keeps the TOTAL row when present so it is not added to its component modes. When TOTAL is absent, it adds the mode records; some 2024 records have no mode label. North Carolina has multiple unlabeled rows per locality, which are added together and checked against statewide results.
+From the repository root, run `python -m pip install -r requirements.txt`, then `python analysis.py`. The script uses the repository-relative CSV path and saves figures and results. It stores locality records in `groupedData` and state-year results in `state_results` during the run. Localities are identified by FIPS and name where available; records without FIPS use their locality name. Other voting modes and parties are excluded.
 
-Validation references: [Virginia 2020 official audit results](https://www.elections.virginia.gov/rla-results_nov-3-2020/), [FEC 2024 official results](https://www.fec.gov/documents/5644/2024presgeresults.pdf), and [Pennsylvania 2020 results](https://www.presidency.ucsb.edu/statistics/elections/2020). MIT warns that combining TOTAL and component modes can double-count votes in its [election-data documentation](https://github.com/MEDSL/2024-elections-official#usage).
+The TOTAL-only filter leaves some states unavailable in certain years, including Virginia in 2020 and Wisconsin in 2024. Some other state-year results may contain only a subset of localities. The presence of a state in the output does not establish complete coverage.
 
 The five numbered files preserve the original exploratory script in consecutive sections; they are not standalone programs. `analysis.py` continues that code as the runnable Lab 2 analysis.
 
@@ -28,6 +28,6 @@ Positive margin or change means a Democratic advantage or movement toward Democr
 ## Next Steps for Final Project
 
 - **Working:** Data loading, filtering, locality grouping, two-party calculations, validation, two plots, and a preliminary regression.
-- **Needs work:** Check more reconstructed state totals against official sources and improve the small model evaluation.
+- **Needs work:** Assess which state-year results have sufficient TOTAL-record coverage and improve the small model evaluation.
 - **Plan:** Compare more competitive states and refine the interpretation of movement over time.
 - **Instructor feedback:** None requested at this time.
