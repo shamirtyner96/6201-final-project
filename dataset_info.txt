@@ -1,0 +1,5 @@
+﻿Dataset: County Presidential Election Returns, 2000–2024
+Source: MIT Election Data + Science Lab, Harvard Dataverse
+URL: https://doi.org/10.7910/DVN/VOQCHQ
+Description: County and county-equivalent presidential election returns by year, candidate, party, and reporting mode.
+Version used: The original CSV is retained in the repository. The analysis filters the original records to Democratic and Republican TOTAL-mode observations and derives state-level two-party results; it does not alter the CSV.

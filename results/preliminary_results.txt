@@ -1,0 +1,7 @@
+Pennsylvania linear regression demonstration
+X: election year; y: Democratic-minus-Republican two-party margin (percentage points)
+Training elections: 2000–2016; test elections: 2020 and 2024
+2020: actual 1.18, predicted 2.24 percentage points
+2024: actual -1.73, predicted 1.53 percentage points
+Test mean absolute error: 2.16 percentage points
+Only two test elections: this is a preliminary exercise, not a forecast.
