@@ -18,6 +18,12 @@ The five numbered files preserve the original exploratory script in consecutive 
 
 ## Next Steps for Final Project
 
-- **Working:** Data loading, filtering, state vote totals, and two-party margins.
-- **Needs work:** Assess which state-year results have sufficient TOTAL-record coverage.
-- **Plan:** Compare more competitive states and refine the interpretation of movement over time.
+- [x] Load the election dataset.
+- [x] Filter for Democratic and Republican TOTAL records.
+- [x] Calculate state vote totals and two-party margins by election year.
+- [ ] Assess which state-year results have sufficient TOTAL-record coverage.
+- [ ] Select competitive states to compare.
+- [ ] Examine how their margins change from election to election.
+- [ ] Create visualizations that help explain the results.
+- [ ] Develop a basic model and evaluate its results.
+- [ ] Prepare the final project report and presentation.
