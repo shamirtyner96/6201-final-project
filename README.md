@@ -21,4 +21,3 @@ The five numbered files preserve the original exploratory script in consecutive 
 - **Working:** Data loading, filtering, state vote totals, and two-party margins.
 - **Needs work:** Assess which state-year results have sufficient TOTAL-record coverage.
 - **Plan:** Compare more competitive states and refine the interpretation of movement over time.
-- **Instructor feedback:** None requested at this time.
