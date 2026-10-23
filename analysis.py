@@ -7,20 +7,13 @@ import pandas as pd
 # Load the original county returns.
 raw_data = pd.read_csv('Lab2/countypres_2000-2024.csv')
 
-print('DATASET EXPLORATION')
-print('Rows and columns:', raw_data.shape)
-print('Columns:', ', '.join(raw_data.columns))
-print('Analytical outcome: Democratic minus Republican two-party vote margin')
-print('Election years:', sorted(raw_data['year'].unique()))
-print('States and DC:', raw_data['state'].nunique())
+# Uncomment these to explore the dataset.
+# print(raw_data.shape, raw_data.columns.tolist())
 
 # Use only Democratic and Republican TOTAL records. Other modes are ignored.
 filter_rows = raw_data['party'].isin(['REPUBLICAN', 'DEMOCRAT']) & (raw_data['mode'] == 'TOTAL')
 voter_data = raw_data[filter_rows]
-print('\nFILTERED DATA')
-print('Democratic/Republican TOTAL records:', len(voter_data))
-print('Candidate votes per TOTAL record:')
-print(voter_data['candidatevotes'].describe().to_string())
+# print(voter_data['candidatevotes'].describe())
 
 # Add the county records to state-level party totals for each election year.
 groupedData = {}
