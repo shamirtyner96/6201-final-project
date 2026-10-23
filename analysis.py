@@ -8,8 +8,8 @@ raw_data = pd.read_csv('Lab2/countypres_2000-2024.csv', dtype={'county_fips': st
 # Identify a county or county-equivalent. Some special records have no FIPS code.
 def county_key(row):
     if pd.notna(row['county_fips']):
-        return row['county_fips']
-    return 'NO FIPS: ' + row['county_name']
+        return (row['county_fips'], row['county_name'])
+    return ('NO FIPS', row['county_name'])
 
 print('DATASET EXPLORATION')
 print('Rows and columns:', raw_data.shape)
@@ -23,46 +23,68 @@ print('States and DC:', raw_data['state'].nunique())
 print('Party values:', ', '.join(sorted(raw_data['party'].dropna().unique())))
 print('Voting mode values:', ', '.join(sorted(raw_data['mode'].dropna().unique())))
 
-# Preserve the original party and TOTAL-mode filters.
-filter_rows = (raw_data['party'].isin(['REPUBLICAN', 'DEMOCRAT'])) & (raw_data['mode'] == 'TOTAL')
-voter_data = raw_data[filter_rows]
+# Keep Democratic and Republican records. Some years report separate modes
+# or leave the mode blank instead of providing a TOTAL row.
+voter_data = raw_data[raw_data['party'].isin(['REPUBLICAN', 'DEMOCRAT'])]
 print('\nFILTERED DATA')
-print('Democratic/Republican TOTAL records:', len(voter_data))
+print('Democratic/Republican records:', len(voter_data))
 used_columns = ['year', 'state', 'county_name', 'county_fips', 'party', 'mode', 'candidatevotes']
 print('Missing values in used fields:')
 print(voter_data[used_columns].isna().sum().to_string())
-print('Candidate votes per filtered record:')
+print('Candidate votes per record (may represent one voting mode):')
 print(voter_data['candidatevotes'].describe().to_string())
 
-# Track all party/locality records, including non-TOTAL modes, to identify gaps.
-all_counties = {}
-for index, row in raw_data[raw_data['party'].isin(['DEMOCRAT', 'REPUBLICAN'])].iterrows():
-    key = (row['year'], row['state'])
-    if key not in all_counties:
-        all_counties[key] = set()
-    all_counties[key].add((row['party'], county_key(row)))
-
-# Continue the original nested-dictionary loop. The county FIPS code distinguishes
-# places with the same name, such as Fairfax County and Fairfax city in Virginia.
-groupedData = {}
+# Gather all records for each year, state, party, and locality.
+# A TOTAL row takes precedence over the same locality's mode breakdowns.
+locality_rows = {}
 for index, row in voter_data.iterrows():
-    party = row['party']
-    state = row['state']
-    county = county_key(row)
     year = row['year']
+    state = row['state']
+    party = row['party']
+    county = county_key(row)
     votes = row['candidatevotes']
+    mode = row['mode'] if pd.notna(row['mode']) else 'UNLABELED'
     if pd.isna(votes) or pd.isna(year) or pd.isna(state) or pd.isna(row['county_name']):
-        raise ValueError('A required filtered field is missing')
+        raise ValueError('A required field is missing')
+    key = (year, state, party, county)
+    if key not in locality_rows:
+        locality_rows[key] = []
+    locality_rows[key].append((mode, votes))
+
+# Continue the original nested-dictionary structure, keeping each locality.
+groupedData = {}
+reconstructed = 0
+for key in locality_rows:
+    year, state, party, county = key
+    rows = locality_rows[key]
+    total_rows = []
+    modes_seen = set()
+    for mode, votes in rows:
+        if mode == 'TOTAL':
+            total_rows.append(votes)
+        # North Carolina 2024 has multiple unlabeled components per locality.
+        # Their summed state totals are checked against published FEC results.
+        elif mode in modes_seen and not any(item[0] == 'TOTAL' for item in rows) and not (year == 2024 and state == 'NORTH CAROLINA' and mode == 'UNLABELED'):
+            raise ValueError('Repeated mode needs review: ' + str((key, mode)))
+        modes_seen.add(mode)
+    if len(total_rows) > 1:
+        raise ValueError('Repeated TOTAL needs review: ' + str(key))
+    if total_rows:
+        votes = total_rows[0]
+    else:
+        votes = 0
+        for mode, amount in rows:
+            votes += amount
+        reconstructed += 1
     if year not in groupedData:
         groupedData[year] = {}
     if state not in groupedData[year]:
         groupedData[year][state] = {}
     if party not in groupedData[year][state]:
         groupedData[year][state][party] = {'total': 0, 'counties': {}}
-    if county in groupedData[year][state][party]['counties']:
-        raise ValueError('Duplicate TOTAL record for: ' + str((year, state, party, county)))
     groupedData[year][state][party]['counties'][county] = votes
     groupedData[year][state][party]['total'] += votes
+print('Locality/party totals reconstructed without a TOTAL row:', reconstructed)
 
 # Calculate shares and signed margins for each available state and election year.
 def calculate_shares(democratic, republican):
@@ -76,57 +98,44 @@ def calculate_shares(democratic, republican):
             'republican_share': rep_share, 'margin': dem_share - rep_share}
 
 state_results = {}
-incomplete = []
-for year, state in sorted(all_counties):
-    if year not in state_results:
-        state_results[year] = {}
-    if year not in groupedData or state not in groupedData[year]:
-        incomplete.append((year, state, 'no TOTAL records'))
-        continue
-    parties = groupedData[year][state]
-    total_counties = set()
-    for party in parties:
-        for county in parties[party]['counties']:
-            total_counties.add((party, county))
-        assert sum(parties[party]['counties'].values()) == parties[party]['total']
-    missing_count = len(all_counties[(year, state)] - total_counties)
-    if missing_count:
-        incomplete.append((year, state, str(missing_count) + ' party/locality records without TOTAL'))
-    if 'DEMOCRAT' not in parties or 'REPUBLICAN' not in parties:
-        continue
-    result = calculate_shares(parties['DEMOCRAT']['total'], parties['REPUBLICAN']['total'])
-    if result is None:
-        continue
-    result['complete_total_coverage'] = missing_count == 0
-    state_results[year][state] = result
-    assert abs(result['democratic_share'] + result['republican_share'] - 100) < 0.000001
-    assert (result['margin'] > 0) == (result['democratic_votes'] > result['republican_votes'])
-    assert (result['margin'] < 0) == (result['democratic_votes'] < result['republican_votes'])
+for year in sorted(groupedData):
+    state_results[year] = {}
+    for state in sorted(groupedData[year]):
+        parties = groupedData[year][state]
+        for party in parties:
+            assert sum(parties[party]['counties'].values()) == parties[party]['total']
+        if 'DEMOCRAT' not in parties or 'REPUBLICAN' not in parties:
+            raise ValueError('Missing party for ' + state + ' ' + str(year))
+        result = calculate_shares(parties['DEMOCRAT']['total'], parties['REPUBLICAN']['total'])
+        if result is None:
+            raise ValueError('Zero two-party votes for ' + state + ' ' + str(year))
+        state_results[year][state] = result
+        assert abs(result['democratic_share'] + result['republican_share'] - 100) < 0.000001
+        assert (result['margin'] > 0) == (result['democratic_votes'] > result['republican_votes'])
+        assert (result['margin'] < 0) == (result['democratic_votes'] < result['republican_votes'])
 
-# Straightforward checks of filters, duplicate handling, sums, and coverage.
 assert set(voter_data['party'].unique()) == {'DEMOCRAT', 'REPUBLICAN'}
-assert set(voter_data['mode'].unique()) == {'TOTAL'}
 assert len(groupedData) > 1
 assert calculate_shares(60, 40)['margin'] > 0
 assert calculate_shares(40, 60)['margin'] < 0
-print('\nVALIDATION: filters, unique locality records, county sums, shares, and margin signs passed.')
-print('Year coverage (states/DC with TOTAL records):')
+# Published statewide totals check labeled, unlabeled, and multiple-unlabeled modes.
+checks = [(2020, 'VIRGINIA', 2413568, 1962430),
+          (2020, 'PENNSYLVANIA', 3458229, 3377674),
+          (2024, 'WISCONSIN', 1668229, 1697626),
+          (2024, 'NORTH CAROLINA', 2715375, 2898423)]
+print('\nVALIDATION: party filter, locality totals, shares, and margin signs passed.')
+print('State/DC coverage by year:')
 for year in sorted(groupedData):
     print(year, len(groupedData[year]))
-print('State-years with incomplete or absent TOTAL coverage:', len(incomplete))
-for year, state, reason in incomplete:
-    print(year, state, '-', reason)
-print('\nSELECTED EXAMPLES (D votes, R votes, two-party margin)')
-for year, state in [(2000, 'VIRGINIA'), (2024, 'VIRGINIA'), (2020, 'PENNSYLVANIA'), (2024, 'WISCONSIN')]:
-    result = state_results.get(year, {}).get(state)
-    if result is None:
-        print(year, state, 'unavailable under TOTAL-only filter')
-    else:
-        print(year, state, int(result['democratic_votes']), int(result['republican_votes']),
-              round(result['margin'], 2), 'percentage points;',
-              'complete coverage:', result['complete_total_coverage'])
+print('Selected published state totals:')
+for year, state, dem_expected, rep_expected in checks:
+    result = state_results[year][state]
+    assert result['democratic_votes'] == dem_expected
+    assert result['republican_votes'] == rep_expected
+    print(year, state, int(result['democratic_votes']), int(result['republican_votes']),
+          'margin:', round(result['margin'], 2), 'percentage points')
 
-# Initial visualizations: use two competitive states with complete TOTAL coverage.
+# Initial visualizations: compare two competitive states.
 from pathlib import Path
 import matplotlib
 matplotlib.use('Agg')
@@ -141,8 +150,8 @@ for state in selected_states:
     state_margins[state] = []
     for year in years:
         result = state_results[year].get(state)
-        if result is None or not result['complete_total_coverage']:
-            raise ValueError('Incomplete TOTAL coverage for ' + state + ' ' + str(year))
+        if result is None:
+            raise ValueError('Missing results for ' + state + ' ' + str(year))
         state_margins[state].append(result['margin'])
 
 figures = Path('figures')
