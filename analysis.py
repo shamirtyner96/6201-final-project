@@ -9,13 +9,13 @@ raw_data = pd.read_csv('Lab2/countypres_2000-2024.csv')
 filter_rows = raw_data['party'].isin(['REPUBLICAN', 'DEMOCRAT']) & (raw_data['mode'] == 'TOTAL')
 voter_data = raw_data[filter_rows]
 
-# Uncomment these lines to explore the data.
-# print('Dataset rows and columns:', raw_data.shape)
-# print('Column names:', raw_data.columns.tolist())
-# print('Vote statistics (including minimum, maximum, and average):', voter_data['candidatevotes'].describe())
-# print('Records by party:', voter_data['party'].value_counts())
-# print('Missing values:', voter_data[['year', 'state', 'county_name', 'party', 'candidatevotes']].isna().sum())
-# print('Election years:', sorted(voter_data['year'].unique()))
+# basic exploratory 
+print('Dataset rows and columns:', raw_data.shape)
+print('Column names:', raw_data.columns.tolist())
+print('Vote statistics:', voter_data['candidatevotes'].describe())
+print('Records by party:', voter_data['party'].value_counts())
+print('Missing values:', voter_data[['year', 'state', 'county_name', 'party', 'candidatevotes']].isna().sum())
+print('Election years:', voter_data['year'].unique()) # will add sorted () to get in order
 
 # Add the county records to state-level party totals for each election year.
 groupedData = {}
@@ -55,5 +55,5 @@ for year in years:
         rep_share = rep_votes / total * 100
         state_margins[year][state] = dem_share - rep_share
 
-# Uncomment to see a margin for a particular year and state.
+# margin for a particular year and state.
 # print(state_margins[2020]['PENNSYLVANIA'])

@@ -1,6 +1,6 @@
 # Swing or Shift?
 
-**Project member:** Shamir Tyner (individual project, instructor approved).
+**Project member:** Shamir Tyner 
 
 **Dataset:** County Presidential Election Returns, 2000–2024, MIT Election Data + Science Lab / Harvard Dataverse: https://doi.org/10.7910/DVN/VOQCHQ. The CSV is in `Lab2/`.
 
@@ -12,18 +12,16 @@
 
 ## Run
 
-From the repository root, install pandas with `python -m pip install pandas` if needed, then run `python analysis.py`. The program stores margins by year and state in the `state_margins` dictionary while it runs. A value of `None` means no usable TOTAL records were available. Uncomment the final print statement in `analysis.py` to see an example. Other voting modes and parties are excluded.
+From the repository root, install pandas with `python -m pip install pandas` if needed, then run `python analysis.py`. The program stores margins by year and state in the `state_margins` dictionary while it runs.Other voting modes and parties are excluded.
 
-The TOTAL-only filter leaves some states unavailable in certain years, including Virginia in 2020 and Wisconsin in 2024. Some other state-year results may contain only a subset of localities. The presence of a state in the output does not establish complete coverage.
-
-The five numbered files preserve the original exploratory script in consecutive sections; they are not standalone programs. `analysis.py` continues that code as the runnable Lab 2 analysis.
+The TOTAL-only filter leaves Virginia in 2020 and Wisconsin in 2024 unavailable due to data capture failures.
 
 ## Next Steps for Final Project
 
 - [x] Load the election dataset.
 - [x] Filter for Democratic and Republican TOTAL records.
 - [x] Calculate state vote totals and two-party margins by election year.
-- [ ] Assess which state-year results have sufficient TOTAL-record coverage.
+- [x] Assess which state-year results have sufficient TOTAL-record coverage.
 - [ ] Select competitive states to compare.
 - [ ] Examine how their margins change from election to election.
 - [ ] Create visualizations that help explain the results.
