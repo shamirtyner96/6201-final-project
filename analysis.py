@@ -2,14 +2,8 @@
 # Run from the repository root: python analysis.py
 import pandas as pd
 
-# Load the original county returns. Keep FIPS codes as text, including leading zeros.
-raw_data = pd.read_csv('Lab2/countypres_2000-2024.csv', dtype={'county_fips': str})
-
-# Identify a county or county-equivalent. Some special records have no FIPS code.
-def county_key(row):
-    if pd.notna(row['county_fips']):
-        return (row['county_fips'], row['county_name'])
-    return ('NO FIPS', row['county_name'])
+# Load the original county returns.
+raw_data = pd.read_csv('Lab2/countypres_2000-2024.csv')
 
 print('DATASET EXPLORATION')
 print('Rows and columns:', raw_data.shape)
@@ -25,7 +19,7 @@ filter_rows = raw_data['party'].isin(['REPUBLICAN', 'DEMOCRAT']) & (raw_data['mo
 voter_data = raw_data[filter_rows]
 print('\nFILTERED DATA')
 print('Democratic/Republican TOTAL records:', len(voter_data))
-used_columns = ['year', 'state', 'county_name', 'county_fips', 'party', 'mode', 'candidatevotes']
+used_columns = ['year', 'state', 'county_name', 'party', 'mode', 'candidatevotes']
 print('Missing values in used fields:')
 print(voter_data[used_columns].isna().sum().to_string())
 print('Candidate votes per TOTAL record:')
@@ -37,7 +31,7 @@ for index, row in voter_data.iterrows():
     year = row['year']
     state = row['state']
     party = row['party']
-    county = county_key(row)
+    county = row['county_name']
     votes = row['candidatevotes']
     if pd.isna(votes) or pd.isna(year) or pd.isna(state) or pd.isna(row['county_name']):
         continue
@@ -47,9 +41,9 @@ for index, row in voter_data.iterrows():
         groupedData[year][state] = {}
     if party not in groupedData[year][state]:
         groupedData[year][state][party] = {'total': 0, 'counties': {}}
-    if county in groupedData[year][state][party]['counties']:
-        raise ValueError('Duplicate TOTAL record: ' + str((year, state, party, county)))
-    groupedData[year][state][party]['counties'][county] = votes
+    if county not in groupedData[year][state][party]['counties']:
+        groupedData[year][state][party]['counties'][county] = 0
+    groupedData[year][state][party]['counties'][county] += votes
     groupedData[year][state][party]['total'] += votes
 
 # Calculate shares and signed margins for each available state and election year.

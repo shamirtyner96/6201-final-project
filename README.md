@@ -10,7 +10,7 @@
 
 ## Run
 
-From the repository root, run `python -m pip install -r requirements.txt`, then `python analysis.py`. The script uses the repository-relative CSV path. It stores locality records in `groupedData` and state-year results in `state_results` during the run. Localities are identified by FIPS and name where available; records without FIPS use their locality name. Other voting modes and parties are excluded.
+From the repository root, run `python -m pip install -r requirements.txt`, then `python analysis.py`. The script uses the repository-relative CSV path. It stores locality records in `groupedData` and state-year results in `state_results` during the run. Localities are grouped by `county_name` within each state and year. Records with the same name in the same state and year are combined; this may merge a county and an independent city that share a name. Other voting modes and parties are excluded.
 
 The TOTAL-only filter leaves some states unavailable in certain years, including Virginia in 2020 and Wisconsin in 2024. Some other state-year results may contain only a subset of localities. The presence of a state in the output does not establish complete coverage.
 
